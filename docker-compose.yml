@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # 1. RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Database Service (MySQL)
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 2345
+      MYSQL_DATABASE: user
+    ports:
+      - "3306:3306"
+
+  # 3. API Service (FastAPI)
+  api:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_started
+    environment:
+      - DB_HOST=db
+      - RABBITMQ_HOST=rabbitmq
+
+  # 4. Worker Service
+  worker:
+    build: .
+    command: python worker.py
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_started
+    environment:
+      - DB_HOST=db
+      - RABBITMQ_HOST=rabbitmq
