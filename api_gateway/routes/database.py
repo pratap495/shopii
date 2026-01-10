@@ -5,9 +5,9 @@ import os
 class AuthDatabase:
     def __init__(self):
         # Update these credentials according to your MySQL setup
-        self.host = os.getenv("DB_HOST", "localhost")
-        self.user = os.getenv("DB_USER", "root")
-        self.password = os.getenv("DB_PASSWORD", "2345")
+         self.host = os.getenv("DB_HOST", "user.c6la0ysq6alt.us-east-1.rds.amazonaws.com")
+        self.user = os.getenv("DB_USER", "admin")
+        self.password = os.getenv("DB_PASSWORD", "mypassword")
         self.db_name = os.getenv("DB_NAME", "user")
 
     def get_connection(self):
