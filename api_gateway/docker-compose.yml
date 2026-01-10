@@ -2,41 +2,59 @@ services:
   api:
     build: .
     container_name: shopapp-api
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
-    restart: unless-stopped
+    # Run uvicorn with reload so code changes apply immediately
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: on-failure
     volumes:
       - .:/app
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
-      - DB_USER=admin
-      - DB_PASSWORD=mypassword
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=2345
       - DB_NAME=user
       - RABBITMQ_HOST=rabbitmq
     depends_on:
+      - db
       - rabbitmq
 
   worker:
     build: .
     container_name: shopapp-worker
     command: python routes/worker.py
-    restart: unless-stopped
+    restart: on-failure
     volumes:
       - .:/app
     environment:
-      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
-      - DB_USER=admin
-      - DB_PASSWORD=mypassword
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=2345
       - DB_NAME=user
       - RABBITMQ_HOST=rabbitmq
     depends_on:
+      - db
       - rabbitmq
+
+  db:
+    image: mysql:8.0
+    container_name: shopapp-db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 2345
+      MYSQL_DATABASE: user
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
 
   rabbitmq:
     image: rabbitmq:3.12-management
     container_name: shopapp-rabbitmq
-    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
+
+volumes:
+  db_data:
