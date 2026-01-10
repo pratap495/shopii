@@ -1,3 +1,4 @@
+import requests
 import pika
 import http.client
 import urllib.parse
@@ -7,7 +8,6 @@ import json
 import time
 import random
 import smtplib
-import requests
 import jwt
 import datetime
 from email.mime.text import MIMEText
@@ -275,8 +275,9 @@ def process_event(ch, method, properties, body):
 def start_worker():
     while True:
         try:
+            rabbitmq_host = os.getenv('RABBITMQ_HOST', 'localhost')
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host='localhost')
+                pika.ConnectionParameters(host=rabbitmq_host)
             )
             break
         except pika.exceptions.AMQPConnectionError:

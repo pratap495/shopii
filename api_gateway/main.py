@@ -4,12 +4,20 @@ from pydantic import BaseModel
 from routes.products import router as product_router
 from routes.auth import router as auth_router
 from routes.database import AuthDatabase
+import os
 
 app = FastAPI(title="Unified Commerce API Gateway")
 
+# Default local origins
+origins = ["http://localhost:8081", "http://127.0.0.1:8081"]
+
+# Add origins from environment variable (for AWS/Production)
+if os.getenv("CORS_ORIGINS"):
+    origins.extend(os.getenv("CORS_ORIGINS").split(","))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

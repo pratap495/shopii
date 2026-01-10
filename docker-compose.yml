@@ -1,52 +1,25 @@
 version: '3.8'
 
 services:
-  # 1. RabbitMQ Service
+  api_gateway:
+    build: ./api_gateway
+    container_name: shopapp_api
+    ports:
+      - "8000:8000"
+    environment:
+      # Add your AWS Public IP or Domain here, separated by commas
+      # Example: http://localhost:8081,http://54.123.45.67:8081
+      - CORS_ORIGINS=http://localhost:8081,http://127.0.0.1:8081
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+    volumes:
+      # Mounts the code for development (optional, remove for production)
+      - ./api_gateway:/app
+
   rabbitmq:
-    image: rabbitmq:3.12-management
+    image: rabbitmq:3-management
+    container_name: shopapp_rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # 2. Database Service (MySQL)
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 2345
-      MYSQL_DATABASE: user
-    ports:
-      - "3306:3306"
-
-  # 3. API Service (FastAPI)
-  api:
-    build: .
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      db:
-        condition: service_started
-    environment:
-      - DB_HOST=db
-      - RABBITMQ_HOST=rabbitmq
-
-  # 4. Worker Service
-  worker:
-    build: .
-    command: python worker.py
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      db:
-        condition: service_started
-    environment:
-      - DB_HOST=db
-      - RABBITMQ_HOST=rabbitmq

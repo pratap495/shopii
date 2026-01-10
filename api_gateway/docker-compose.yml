@@ -1,0 +1,42 @@
+services:
+  api:
+    build: .
+    container_name: shopapp-api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
+      - DB_USER=admin
+      - DB_PASSWORD=mypassword
+      - DB_NAME=user
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  worker:
+    build: .
+    container_name: shopapp-worker
+    command: python routes/worker.py
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    environment:
+      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
+      - DB_USER=admin
+      - DB_PASSWORD=mypassword
+      - DB_NAME=user
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: shopapp-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
