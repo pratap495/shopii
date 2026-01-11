@@ -2,20 +2,40 @@ version: '3.8'
 
 services:
   api_gateway:
-    build: ./api_gateway
+    build: .
     container_name: shopapp_api
     ports:
       - "8000:8000"
     environment:
       # Add your AWS Public IP or Domain here, separated by commas
       # Example: http://localhost:8081,http://54.123.45.67:8081
-      - CORS_ORIGINS=http://localhost:8081,http://127.0.0.1:8081
+      - CORS_ORIGINS=http://localhost:8081,http://127.0.0.1:8081,http://44.214.139.171:8081
+      - RABBITMQ_HOST=rabbitmq
+      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
+      - DB_USER=admin
+      - DB_PASSWORD=mypassword
+      - DB_NAME=user
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      # Mounts the code for development (remove for production to use built image)
+       - ./api_gateway:/app
+
+  worker:
+    build: .
+    container_name: shopapp_worker
+    command: python routes/worker.py
+    restart: on-failure
+    environment:
+      - DB_HOST=user.c6la0ysq6alt.us-east-1.rds.amazonaws.com
+      - DB_USER=admin
+      - DB_PASSWORD=mypassword
+      - DB_NAME=user
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - rabbitmq
-    volumes:
-      # Mounts the code for development (optional, remove for production)
-      - ./api_gateway:/app
+      rabbitmq:
+        condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -23,3 +43,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
