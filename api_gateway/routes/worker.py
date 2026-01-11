@@ -201,8 +201,8 @@ def process_event(ch, method, properties, body):
         # Save results to a file so the API can read it
         request_id = data.get('requestId')
         if request_id:
-            # Use the directory of the script to ensure both worker and API find the same path
-            output_dir = os.path.dirname(os.path.abspath(__file__))
+            # Use the app root directory (parent of routes) to ensure both worker and API find the same path
+            output_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             file_path = os.path.join(output_dir, f"search_results_{request_id}.json")
             with open(file_path, "w") as f:
                 json.dump(results, f)
@@ -220,7 +220,7 @@ def process_event(ch, method, properties, body):
         # Save results to a file so the API can read it
         request_id = data.get('requestId')
         if request_id:
-            output_dir = os.path.dirname(os.path.abspath(__file__))
+            output_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             file_path = os.path.join(output_dir, f"product_details_{request_id}.json")
             with open(file_path, "w") as f:
                 json.dump(result, f)
@@ -262,8 +262,8 @@ def process_event(ch, method, properties, body):
         # Save results to a file so the API can read it
         request_id = data.get('requestId')
         if request_id:
-            # Use the directory of the script to ensure both worker and API find the same path
-            output_dir = os.path.dirname(os.path.abspath(__file__))
+            # Use the app root directory (parent of routes) to ensure both worker and API find the same path
+            output_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             file_path = os.path.join(output_dir, f"search_results_{request_id}.json")
             with open(file_path, "w") as f:
                 json.dump(top_5, f)

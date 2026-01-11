@@ -9,7 +9,7 @@ import os
 app = FastAPI(title="Unified Commerce API Gateway")
 
 # Default local origins
-origins = ["http://localhost:8081", "http://127.0.0.1:8081"]
+origins = ["*"]
 
 # Add origins from environment variable (for AWS/Production)
 if os.getenv("CORS_ORIGINS"):

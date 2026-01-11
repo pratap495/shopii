@@ -1,9 +1,10 @@
 import pika
 import json
+import os
 
 def publish_event(event_type: str, data: dict):
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host="localhost")
+        pika.ConnectionParameters(host=os.getenv("RABBITMQ_HOST", "localhost"))
     )
     channel = connection.channel()
 
